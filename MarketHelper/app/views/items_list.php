@@ -59,10 +59,21 @@
                                 </td>
 
                                 <td class="px-5 py-4">
-                                    <a href="<?= BASE_URL ?>/index.php?url=item/show/<?= $item['id'] ?>"
-                                       class="px-3 py-2 rounded-full bg-[#FFF5F7] hover:bg-[#FFE1E6] text-[#FF7F96] text-sm font-medium border border-[#FFB6C1] transition">
-                                        Detail
-                                    </a>
+                                    <div class="flex flex-wrap gap-2">
+
+                                        <?php if (isset($_SESSION['user_id']) && ((int)$item['created_by'] === (int)$_SESSION['user_id'] || !empty($_SESSION['is_admin']))): ?>
+                                            <a href="<?= BASE_URL ?>/index.php?url=item/edit/<?= $item['id'] ?>"
+                                            class="px-3 py-2 rounded-full bg-[#E6D6F7] hover:bg-[#d8c1f2] text-[#7C5FA8] text-sm font-medium border border-[#d8c1f2] transition">
+                                                Edit
+                                            </a>
+                                        <?php endif; ?>
+
+                                        <a href="<?= BASE_URL ?>/index.php?url=item/show/<?= $item['id'] ?>"
+                                        class="px-3 py-2 rounded-full bg-[#FFF5F7] hover:bg-[#FFE1E6] text-[#FF7F96] text-sm font-medium border border-[#FFB6C1] transition">
+                                            Detail
+                                        </a>
+
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

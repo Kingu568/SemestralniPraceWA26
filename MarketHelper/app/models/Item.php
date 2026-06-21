@@ -62,4 +62,21 @@ class Item
             ':id' => $id
         ]);
     }
+    public function update($id, $name, $category, $description)
+    {
+        $sql = "UPDATE items
+                SET name = :name,
+                    category = :category,
+                    description = :description
+                WHERE id = :id";
+
+        $stmt = $this->db->prepare($sql);
+
+        return $stmt->execute([
+            ':id' => $id,
+            ':name' => $name,
+            ':category' => $category !== '' ? $category : 'Other',
+            ':description' => $description !== '' ? $description : null
+        ]);
+    }
 }

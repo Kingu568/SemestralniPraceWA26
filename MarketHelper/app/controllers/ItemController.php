@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../models/Item.php';
+require_once __DIR__ . '/../models/Comment.php';
 
 class ItemController
 {
@@ -8,6 +9,7 @@ class ItemController
     {
         $itemModel = new Item();
         $items = $itemModel->getAll();
+        
 
         require_once __DIR__ . '/../views/items_list.php';
     }
@@ -18,6 +20,10 @@ class ItemController
             header('Location: ' . BASE_URL . '/index.php?url=item/index');
             exit;
         }
+
+
+        $commentModel = new Comment();
+        $comments = $commentModel->getByItemId($id);
 
         $itemModel = new Item();
         $item = $itemModel->getById($id);
@@ -92,6 +98,94 @@ class ItemController
         }
 
         header('Location: ' . BASE_URL . '/index.php?url=auth/admin');
+        exit;
+    }
+
+    public function edit($id = null)
+    {
+        $this->requireLogin();
+
+        if (!$id) {
+            $this->addErrorMessage('Nebyl zadán item k úpravě.');
+            header('Location: ' . BASE_URL . '/index.php?url=item/index');
+            exit;
+        }
+
+        $itemModel = new Item();
+        $item = $itemModel->getById((int)$id);
+
+        if (!$item) {
+            $this->addErrorMessage('Item nebyl nalezen.');
+            header('Location: ' . BASE_URL . '/index.php?url=item/index');
+            exit;
+        }
+
+        if ((int)$item['created_by'] !== (int)$_SESSION['user_id'] && empty($_SESSION['is_admin'])) {
+            $this->addErrorMessage('Nemáte oprávnění upravovat tento item.');
+            header('Location: ' . BASE_URL . '/index.php?url=item/index');
+            exit;
+        }
+
+        require_once __DIR__ . '/../views/item_edit.php';
+    }
+
+    public function update($id = null)
+    {
+        $this->requireLogin();
+
+        if (!$id) {
+            $this->addErrorMessage('Nebyl zadán item k aktualizaci.');
+            header('Location: ' . BASE_URL . '/index.php?url=item/index');
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->addNoticeMessage('Pro úpravu itemu je nutné odeslat formulář.');
+            header('Location: ' . BASE_URL . '/index.php?url=item/index');
+            exit;
+        }
+
+        $itemModel = new Item();
+        $item = $itemModel->getById((int)$id);
+
+        if (!$item) {
+            $this->addErrorMessage('Item nebyl nalezen.');
+            header('Location: ' . BASE_URL . '/index.php?url=item/index');
+            exit;
+        }
+
+        if ((int)$item['created_by'] !== (int)$_SESSION['user_id'] && empty($_SESSION['is_admin'])) {
+            $this->addErrorMessage('Nemáte oprávnění upravovat tento item.');
+            header('Location: ' . BASE_URL . '/index.php?url=item/index');
+            exit;
+        }
+
+        $name = trim($_POST['name'] ?? '');
+        $category = trim($_POST['category'] ?? 'Other');
+        $description = trim($_POST['description'] ?? '');
+
+        if ($name === '') {
+            $this->addErrorMessage('Název itemu je povinný.');
+            header('Location: ' . BASE_URL . '/index.php?url=item/edit/' . $id);
+            exit;
+        }
+
+        $allowedCategories = ['Material', 'Gear', 'Consumable', 'Housing', 'Other'];
+
+        if (!in_array($category, $allowedCategories, true)) {
+            $category = 'Other';
+        }
+
+        $isUpdated = $itemModel->update((int)$id, $name, $category, $description);
+
+        if ($isUpdated) {
+            $this->addSuccessMessage('Item byl úspěšně upraven.');
+            header('Location: ' . BASE_URL . '/index.php?url=item/show/' . $id);
+            exit;
+        }
+
+        $this->addErrorMessage('Item se nepodařilo upravit.');
+        header('Location: ' . BASE_URL . '/index.php?url=item/edit/' . $id);
         exit;
     }
 
