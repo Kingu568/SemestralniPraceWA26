@@ -37,7 +37,7 @@ class AuthController
             exit;
         }
 
-        /*
+        
         if (strlen($password) < 8) {
             $this->addErrorMessage('Heslo musí mít alespoň 8 znaků.');
             header('Location: ' . BASE_URL . '/index.php?url=auth/register');
@@ -49,7 +49,7 @@ class AuthController
             header('Location: ' . BASE_URL . '/index.php?url=auth/register');
             exit;
         }
-        */
+        
 
         $db = (new Database())->getConnection();
         $userModel = new User($db);
